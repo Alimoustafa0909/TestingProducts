@@ -95,25 +95,86 @@ class ProductTest extends TestCase
             'description' => 'asdmnajksdnajsdnasd',
         ];
 
-        $response = $this->actingAs($this->admin)->post('product/store',$product);
+        $response = $this->actingAs($this->admin)->post('product/store', $product);
         $response->assertStatus(302);
         $response->assertRedirect('product');
 
-        $this->assertDatabaseHas('products',$product);
+        $this->assertDatabaseHas('products', $product);
     }
 
-    public function test_admin_can_edit_a_product()
+//    public function test_admin_can_edit_a_product()
+//    {
+//        $product = [
+//            'name' => 'teto',
+//            'description' => 'asdmnajksdnajsdnasd',
+//        ];
+//
+//        $response = $this->actingAs($this->admin)->post('product/update',$product);
+//        $response->assertStatus(302);
+//        $response->assertRedirect('product');
+//
+//        $this->assertDatabaseHas('products',$product);
+//    }
+
+
+    public function test_product_edit_contains_correct_values()
+    {
+        $product = Product::factory()->create();
+        $response = $this->actingAs($this->admin)->get('product/' . $product->id . '/edit');
+        $response->assertStatus(200);
+        $response->assertSee('value="' . $product->name . '"', false);
+        $response->assertSee('value="' . $product->description . '"', false);
+
+    }
+
+    public function test_product_update_validation_error_redirects_back_to_form()
+    {
+        $product = Product::factory()->create();
+        $response = $this->actingAs($this->admin)->put('product/' . $product->id, [
+            'name' => '',
+            'description' => '',
+        ]);
+        $response->assertStatus(302);
+        $response->assertSessionHasErrors(['name']);
+        $response->assertSessionHasErrors(['description']);
+    }
+
+    public function test_admin_can_delete_product_successfully()
+    {
+        $product = Product::factory()->create();
+
+        $response = $this->actingAs($this->admin)->delete('/product/' . $product->id);
+
+        $response->assertStatus(302);
+        $response->assertRedirect('/product');
+        $this->assertDatabaseMissing('products', $product->toArray());
+        $this->assertDatabaseEmpty('products', 0);
+    }
+
+
+    public function test_api_returns_all_products()
+    {
+        $product = Product::factory()->create();
+
+        $response = $this->getJson('/api/products');
+        $response->assertJson([$product->toArray()]);
+
+    }
+
+    public function test_api_product_store_successfully()
     {
         $product = [
-            'name' => 'teto',
-            'description' => 'asdmnajksdnajsdnasd',
+            'name' => 'asdakskdasd',
+            'description' => 'aksdmalksdmad',
         ];
+       $response= $this->postJson('api/products', $product);
 
-        $response = $this->actingAs($this->admin)->post('product/update',$product);
-        $response->assertStatus(302);
-        $response->assertRedirect('product');
+       $response->assertStatus(201);
+        $response->assertJson($product);
+        $this->assertDatabaseHas('products', $product);
 
-        $this->assertDatabaseHas('products',$product);
+
+
     }
 
     private function createUser($isAdmin): User

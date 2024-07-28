@@ -23,7 +23,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/product/store', [ProductController::class, 'store'])->name('product.store')->middleware(isAdminMiddleware::class);
     Route::get('/product/{product}/edit', [ProductController::class, 'edit'])->name('product.edit')->middleware(isAdminMiddleware::class);
     Route::put('/product/{product}', [ProductController::class, 'update'])->name('product.update')->middleware(isAdminMiddleware::class);
-
+    Route::delete('/product/{product}', [ProductController::class, 'destroy'])->name('product.destroy')->middleware(isAdminMiddleware::class);
 
 });
 

@@ -35,6 +35,12 @@
         .btn:hover {
             background-color: #0056b3;
         }
+        .btn-delete {
+            background-color: #dc3545;
+        }
+        .btn-delete:hover {
+            background-color: #c82333;
+        }
     </style>
 </head>
 <body>
@@ -58,6 +64,11 @@
             <td>{{ $product->description }}</td>
             <td>
                 <a href="{{ route('product.edit', $product) }}" class="btn">Edit</a>
+                <form action="{{ route('product.destroy', $product) }}" method="POST" style="display:inline;">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="btn btn-delete" onclick="return confirm('Are you sure?')">Delete</button>
+                </form>
             </td>
         </tr>
     @empty
